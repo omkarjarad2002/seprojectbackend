@@ -1,6 +1,7 @@
 const express = require("express")
 const path = require("path")
 const router = express.Router();
+const SignedUser = require("../models/signupSchema")
 const User = require("../models/userSchema")
 const Contact = require("../models/contactSchema")
 const bcrypt = require("bcryptjs");
@@ -38,12 +39,12 @@ router.post("/signup", async (req, res)=>{
 
     try {
 
-        const userExist = await User.findOne({email : email})
+        const userExist = await SignedUser.findOne({email : email})
 
         if(userExist){
             return res.status(401).json({message:"User allready exist !"})
         }else{
-            const user = new User({email,password,cpassword})
+            const user = new SignedUser({email,password,cpassword})
             await user.save(); 
             return res.status(200).json({message:"User signup successfully !"})
         }

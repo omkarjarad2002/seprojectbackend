@@ -80,6 +80,11 @@ router.post("/register", async (req, res)=>{
     }
 })
 
+
+
+
+/*
+
 //Contact route
 
 router.post("/contact", async (req, res)=>{
@@ -156,9 +161,10 @@ router.get("/getEvents",async (req, res)=>{
     return res.json(getEvents);
 })
 
+*/
 
 //*****************************************PROFILE PAGE***********************************//
-
+/*
 router.get("/getUserProfileInfo/:id", async(req, res)=>{
     const UserInfo = await User.findOne({_id: req.params.id});
     return res.json({UserInfo});
@@ -173,25 +179,26 @@ router.delete("/deleteProfileImage", async(req, res)=>{
     const responce = await User.findByIdAndDelete({_id: req.params.id})
     return res.json(responce);
 })
+*/
 
 //*****************************************CLASSROOM PAGE***********************************//
-
+/*
 router.get('/getClassrooms/:id', async(req, res)=>{
     const getClassrooms = await Classroom.find({_id: req.params.id});
     return res.json(getClassrooms);
 })
-
+*/
 //*****************************************TEACHERS PAGE***********************************//
 
 //get teachers info route 
-
+/*
 router.get('/getTeacherProfile/:id', async(req, res)=>{
     const responce = await User.findOne({_id: req.params.id});
     return res.json(responce);
 })
-
+*/
 //post events route
-
+/*
 router.post("/events", async (req, res)=>{
     const {title, description, file} = req.body
 
@@ -210,11 +217,11 @@ router.post("/events", async (req, res)=>{
     }
 })
 
-
+*/
 //*****************************************MANAGEMENT PAGE***********************************//
 
 //get management profile info route
-
+/*
 router.get('/getAdminProfile/:id', async(req, res)=>{
     const responce = await User.findOne({_id: req.params.id});
     return res.json(responce);
@@ -278,6 +285,10 @@ router.post('/sendEmailtoteacher', async(req, res)=>{
         
     }
 })
+
+
+*/
+
 
 //exporting router module from auth to router file
 

@@ -26,9 +26,36 @@ const upload = multer({ storage })
 
 //*****************************************HOME PAGE***********************************//
 
+// signup route
+router.post("/register", async (req, res)=>{
+    const {email , password , cpassword} = req.body
+
+    if(!email || !password || !cpassword){
+        return
+    }
+
+    console.log(req.body.email)
+
+    try {
+
+        const userExist = await User.findOne({email : email})
+
+        if(userExist){
+            return res.status(401).json({message:"User allready exist !"})
+        }else{
+            const user = new User({email,password,cpassword})
+            await user.save(); 
+            return res.status(200).json({message:"User signup successfully !"})
+        }
+        
+    } catch (error) {
+        return res.status(401).json({message:error})
+    }
+})
+
 // registration route
 router.post("/register", async (req, res)=>{
-    const {name , email , phone , year , branch , password , cpassword} = req.body
+    const {name , email , phone , year , branch} = req.body
 
     if(!name || !email || !phone || !year || !branch || !password || !cpassword){
         return
@@ -41,11 +68,11 @@ router.post("/register", async (req, res)=>{
         const userExist = await User.findOne({email : email})
 
         if(userExist){
-            return res.status(401).json({message:"User allready exist !"})
-        }else{
-            const user = new User({name, email, phone,year,branch,password,cpassword})
+            const user = new User({name, email, phone,year,branch})
             await user.save(); 
-            return res.status(200).json({message:"User registered successfully !"})
+            return res.status(200).json({message:"User registered successfully !"}) 
+        }else{ 
+            return res.status(401).json({message:"Sorry, user not exist !"})
         }
         
     } catch (error) {

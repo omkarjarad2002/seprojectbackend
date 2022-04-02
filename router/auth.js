@@ -27,7 +27,7 @@ const upload = multer({ storage })
 //*****************************************HOME PAGE***********************************//
 
 // signup route
-router.post("/register", async (req, res)=>{
+router.post("/signup", async (req, res)=>{
     const {email , password , cpassword} = req.body
 
     if(!email || !password || !cpassword){

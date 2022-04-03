@@ -14,26 +14,14 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    year:{
-        type:Number,
-        required:true
-    },
     branch:{
         type:String, 
         required:true
     },
-    password:{
-        type:String,
+    year:{
+        type:Number,
         required:true
-    },
-    cpassword:{
-        type:String,
-        required:true
-    },
-    isteacher:{
-        type:Boolean,
-        default:false
-    },
+    }, 
     date:{
         type:Date,
         default:Date.now

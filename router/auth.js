@@ -35,8 +35,6 @@ router.post("/signup", async (req, res)=>{
         return
     }
 
-    console.log(req.body.email)
-
     try {
 
         const userExist = await SignedUser.findOne({email : email})
@@ -56,24 +54,22 @@ router.post("/signup", async (req, res)=>{
 
 // registration route
 router.post("/register", async (req, res)=>{
-    const {name , email , phone , year , branch} = req.body
+    const {name , email , phone , branch , year } = req.body
 
-    if(!name || !email || !phone || !year || !branch || !password || !cpassword){
+    if(!name || !email || !phone || !branch || !year){
         return
-    }
-
-    console.log(req.body.name)
+    } 
 
     try {
 
-        const userExist = await User.findOne({email : email})
+        const userExist = await SignedUser.findOne({email : email})
 
         if(userExist){
-            const user = new User({name, email, phone,year,branch})
+            const user = new User({name, email, phone,branch,year})
             await user.save(); 
             return res.status(200).json({message:"User registered successfully !"}) 
         }else{ 
-            return res.status(401).json({message:"Sorry, user not exist !"})
+            return res.status(401).json({message:"Sorry, user does not exist !"})
         }
         
     } catch (error) {

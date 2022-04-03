@@ -80,31 +80,8 @@ router.post("/register", async (req, res)=>{
 
 
 
-/*
 
-//Contact route
-
-router.post("/contact", async (req, res)=>{
-
-    const {name, email, phone, address, comment}= req.body
-
-
-    if(!name || !email || !phone || !address || !comment){
-        return
-    }
-
-    try {
-        
-        const contact = new Contact({name, email, phone, address, comment})
-        await contact.save();
-        return res.status(201).json({message:"Contacting..."})
-
-    } catch (error) {
-        return res.status(401).json({message:error})
-    }
-    
-})
-
+ 
 //signIn route
 
 router.get("/login", async (req, res)=>{
@@ -115,8 +92,8 @@ router.get("/login", async (req, res)=>{
     }
     
     try {
-        const userLogin = await User.findOne({email:email})
-        const teacherLogin = await User.findOne({email:email, isteacher:true})
+        const userLogin = await SignedUser.findOne({email:email})
+        // const teacherLogin = await User.findOne({email:email, isteacher:true})
 
         if(userLogin){
             const isMatch = await bcrypt.compare(password, userLogin.password)
@@ -136,9 +113,11 @@ router.get("/login", async (req, res)=>{
 
             if(!isMatch){
                 return res.status(401).json({message:"User not found !"})
-            }else if(teacherLogin){
-                return res.status(200).json({message:"Teacher login successfully !"})
-            }else{
+            }
+            // else if(teacherLogin){
+            //     return res.status(200).json({message:"Teacher login successfully !"})
+            // }
+            else{
 
                 return res.status(200).json({message:"Student login successfully !"})
             }
@@ -151,6 +130,7 @@ router.get("/login", async (req, res)=>{
     }
 })
 
+/*
 //get events route
 
 router.get("/getEvents",async (req, res)=>{

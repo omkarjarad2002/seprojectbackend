@@ -89,11 +89,10 @@ router.post("/login", async (req, res) => {
 
   try {
     const userLogin = await SignedUser.findOne({ email: email });
-    // const teacherLogin = await User.findOne({email:email, isteacher:true})
+    const isadmin = await SignedUser.findOne({ email: email, isAdmin: true }); 
 
     if (userLogin) {
-      const isMatch = await bcrypt.compare(password, userLogin.password);
-      const isadmin = await SignedUser.findOne({ email: email, isAdmin: true });
+      const isMatch = await bcrypt.compare(password, userLogin.password);  
 
       const token = await userLogin.generateAuthToken();
 

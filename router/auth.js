@@ -1,154 +1,147 @@
-const express = require("express")
-const path = require("path")
+const express = require("express");
+const path = require("path");
 const router = express.Router();
-const SignedUser = require("../models/signupSchema")
-const User = require("../models/userSchema")
-const Contact = require("../models/contactSchema")
+const SignedUser = require("../models/signupSchema");
+const User = require("../models/userSchema");
+const Contact = require("../models/contactSchema");
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto")
-const multer = require("multer")
+const crypto = require("crypto");
+const multer = require("multer");
 const Event = require("../models/eventSchema");
 const nodemailer = require("nodemailer");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb)=>{
-        cb(null, path.join(__dirname, "../uploads"));
-    },
-    filename:(req, file, cb)=>{
-        const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${path.extname(file.originalname)}`;
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../uploads"));
+  },
+  filename: (req, file, cb) => {
+    const uniqueFileName = `${Date.now()}-${crypto
+      .randomBytes(6)
+      .toString("hex")}${path.extname(file.originalname)}`;
 
-        cb(null, uniqueFileName);
-    }
+    cb(null, uniqueFileName);
+  },
 });
 
-const upload = multer({ storage })
+const upload = multer({ storage });
 
 //*****************************************HOME PAGE***********************************//
 
 // signup route
-router.post("/signup", async (req, res)=>{
-    const {email , password , cpassword} = req.body
+router.post("/signup", async (req, res) => {
+  const { email, password, cpassword } = req.body;
 
-    if(!email || !password || !cpassword){
-        return
+  if (!email || !password || !cpassword) {
+    return;
+  }
+
+  try {
+    const userExist = await SignedUser.findOne({ email: email });
+
+    if (userExist) {
+      return res.status(401).json({ message: "User allready exist !" });
+    } else {
+      const user = new SignedUser({ email, password, cpassword });
+      await user.save();
+      return res.status(200).json({ message: "User signup successfully !" });
     }
-
-    try {
-
-        const userExist = await SignedUser.findOne({email : email})
-
-        if(userExist){
-            return res.status(401).json({message:"User allready exist !"})
-        }else{
-            const user = new SignedUser({email,password,cpassword})
-            await user.save(); 
-            return res.status(200).json({message:"User signup successfully !"})
-        }
-        
-    } catch (error) {
-        return res.status(401).json({message:error})
-    }
-})
+  } catch (error) {
+    return res.status(401).json({ message: error });
+  }
+});
 
 // registration route
-router.post("/register", async (req, res)=>{
-    const {name , email , phone , branch , year } = req.body
+router.post("/register", async (req, res) => {
+  const { name, email, phone, branch, year } = req.body;
 
-    if(!name || !email || !phone || !branch || !year){
-        return
-    } 
+  if (!name || !email || !phone || !branch || !year) {
+    return;
+  }
 
-    try {
+  try {
+    const userExist = await SignedUser.findOne({ email: email }); 
+    const allreadyExist = await User.findOne({ email: email });
 
-        const userExist = await SignedUser.findOne({email : email})
-        const allreadyExist = await User.findOne({email:email})
-
-        if(userExist && !allreadyExist){
-            const user = new User({name, email, phone,branch,year})
-            await user.save(); 
-            return res.status(200).json({message:"User registered successfully !"}) 
-        }else{ 
-            return res.status(401).json({message:"Sorry, user does not exist !"})
-        }
-        
-    } catch (error) {
-        return res.status(401).json({message:error})
+    if (userExist && !allreadyExist) {
+      const user = new User({ name, email, phone, branch, year });
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "User registered successfully !" });
+    } else {
+      return res.status(401).json({ message: "Sorry, user does not exist !" });
     }
-})
+  } catch (error) {
+    return res.status(401).json({ message: error });
+  }
+});
 
-
-
-
-
- 
 //signIn route
 
-router.post("/login", async (req, res)=>{
-    const {email , password} = req.body
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    if(!email || !password){
-        return
-    }
+  if (!email || !password) {
+    return;
+  }
 
-    
-    try {
-        const userLogin = await SignedUser.findOne({email:email})
-        // const teacherLogin = await User.findOne({email:email, isteacher:true})
+  try {
+    const userLogin = await SignedUser.findOne({ email: email });
+    // const teacherLogin = await User.findOne({email:email, isteacher:true})
 
-        if(userLogin){
-            const isMatch = await bcrypt.compare(password, userLogin.password)
-            
-            const token = await userLogin.generateAuthToken();
+    if (userLogin) {
+      const isMatch = await bcrypt.compare(password, userLogin.password);
+      const isadmin = await SignedUser.findOne({ email: email, isAdmin: true });
 
-            res.cookie("jwttoken", token, {
-                expires: new Date(Date.now() + 1000*60*60*24*7),
-                httpOnly: true,
-              });
+      const token = await userLogin.generateAuthToken();
 
+      res.cookie("jwttoken", token, {
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        httpOnly: true,
+      });
 
-            if(!isMatch){
-                return res.status(401).json({message:"User not found !"})
-            }else{
-
-                return res.status(200).json({message:"Student login successfully !"})
-            }
-        }else{
-            return res.status(400).json({message:"Invalid credentials !!"})
-        }
-        
-    } catch (error) {
-        return res.status(401).json({message:error})
-    }
-})
-
-
-router.get("/refreshtoken", async (req, res)=>{
-    const {jwttoken}=req.cookies;
-  
-    if(!jwttoken){
-      return res.status(401).json({message:"ERROR"});
-    }
-  
-    try {
-  
-      const tokenData = jwt.verify(jwttoken,  process.env.SECRET_KEY);
-  
-      const user = await SignedUser.findOne({_id:tokenData._id});
-  
-      if(!user){
-        return res.status(400).json({message:"ERROR"});
+      if (isadmin) {
+        return res.status(201).json({ message: "success" });
       }
-  
-      return res.status(200).json({user});
-      
-    } catch (error) {
-      return res.status(401).json({message:"ERROR"});
-    }
-  
-  })
 
+      if (!isMatch) {
+        return res.status(401).json({ message: "User not found !" });
+      } else {
+        return res
+          .status(200)
+          .json({ message: "Student login successfully !" });
+      }
+    } else {
+      return res.status(400).json({ message: "Invalid credentials !!" });
+    }
+  } catch (error) {
+    return res.status(401).json({ message: error });
+  }
+});
+
+router.get("/refreshtoken", async (req, res) => {
+  const { jwttoken } = req.cookies;
+
+  if (!jwttoken) {
+    return res.status(401).json({ message: "ERROR" });
+  }
+
+  try {
+    const tokenData = jwt.verify(jwttoken, process.env.SECRET_KEY);
+
+    const user = await SignedUser.findOne({ _id: tokenData._id });
+
+    if (!user) {
+      return res.status(400).json({ message: "ERROR" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(401).json({ message: "ERROR" });
+  }
+});
 
 /*
 //get events route
@@ -187,7 +180,7 @@ router.get('/getClassrooms/:id', async(req, res)=>{
 */
 //*****************************************TEACHERS PAGE***********************************//
 
-//get teachers info route 
+//get teachers info route
 /*
 router.get('/getTeacherProfile/:id', async(req, res)=>{
     const responce = await User.findOne({_id: req.params.id});
@@ -286,7 +279,6 @@ router.post('/sendEmailtoteacher', async(req, res)=>{
 
 */
 
-
 //exporting router module from auth to router file
 
-module.exports = router
+module.exports = router;

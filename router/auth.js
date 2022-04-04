@@ -101,17 +101,13 @@ router.post("/login", async (req, res) => {
         httpOnly: true,
       });
 
-      if (isadmin) {
-        return res.status(200).json({ message: "success" });
-      }
-
       if (!isMatch) {
         return res.status(401).json({ message: "User not found !" });
-      } else {
-        return res
-          .status(201)
-          .json({ message: "Student login successfully !" });
-      }
+      }else if (isadmin) {
+        return res.status(200).json({isadmin});
+      }else{
+        return res.status(200).json({userLogin})
+      } 
     } else {
       return res.status(400).json({ message: "Invalid credentials !!" });
     }

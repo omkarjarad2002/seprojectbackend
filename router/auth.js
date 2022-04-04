@@ -102,14 +102,14 @@ router.post("/login", async (req, res) => {
       });
 
       if (isadmin) {
-        return res.status(201).json({ message: "success" });
+        return res.status(200).json({ message: "success" });
       }
 
       if (!isMatch) {
         return res.status(401).json({ message: "User not found !" });
       } else {
         return res
-          .status(200)
+          .status(201)
           .json({ message: "Student login successfully !" });
       }
     } else {

@@ -63,8 +63,9 @@ router.post("/register", async (req, res)=>{
     try {
 
         const userExist = await SignedUser.findOne({email : email})
+        const allreadyExist = await User.findOne({email:email})
 
-        if(userExist){
+        if(userExist || !allreadyExist){
             const user = new User({name, email, phone,branch,year})
             await user.save(); 
             return res.status(200).json({message:"User registered successfully !"}) 

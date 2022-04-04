@@ -1,4 +1,6 @@
+const jwt = require("jsonwebtoken")
 const mongoose = require("mongoose")
+const bcrypt = require("bcryptjs")
 
 const signupSchema = new mongoose.Schema({
  
@@ -20,7 +22,7 @@ const signupSchema = new mongoose.Schema({
     },
     tokens:[
         {
-            refreshtoken:{
+            tokens:{
                 type:String,
                 required:true
             }
@@ -28,19 +30,26 @@ const signupSchema = new mongoose.Schema({
     ]
 })
 
+//  We are hashing the password and securing it
 
-signupSchema.methods.generateAuthToken=async function(){
+signupSchema.pre('save', async function(next){    
+    if(this.isModified('password')){
+        this.password = await bcrypt.hash(this.password, 12);
+        this.cpassword = await bcrypt.hash(this.cpassword, 12)
+    }
+    next();
+})
+
+//generating token by using jwt and adding in to the userSchema
+
+signupSchema.methods.generateAuthToken = async function(){
     try {
-        const generateRefreshToken = jwt.sign({_id:this._id}, process.env.REFRESH__TOKEN);
-        const generateAccessToken = jwt.sign({_id:this._id}, process.env.ACCESS__TOKEN);
-        this.tokens = this.tokens.concat({refreshtoken:generateRefreshToken, accesstoken:generateAccessToken})
-
+        let generateToken = jwt.sign({_id:this._id}, process.env.SECRET_KEY)
+        this.tokens = this.tokens.concat({ token : generateToken})
         await this.save();
-
-        return refreshtoken;
-        
+        return generateToken; 
     } catch (error) {
-        console.log("ERROR")
+        console.log(error)
     }
 }
 

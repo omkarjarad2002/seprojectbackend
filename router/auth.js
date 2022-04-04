@@ -90,6 +90,7 @@ router.post("/login", async (req, res)=>{
     if(!email || !password){
         return
     }
+
     
     try {
         const userLogin = await SignedUser.findOne({email:email})
@@ -98,26 +99,17 @@ router.post("/login", async (req, res)=>{
         if(userLogin){
             const isMatch = await bcrypt.compare(password, userLogin.password)
             
-            const refreshtoken = await userLogin.generateRefreshToken();
+            const token = await userLogin.generateAuthToken();
 
-            res.cookie("jwttoken", refreshtoken, {
+            res.cookie("jwttoken", token, {
                 expires: new Date(Date.now() + 1000*60*60*24*7),
-                httpOnly:true
-            })
-
-            res.cookie("jwttoken", accesstoken,{
-                expires: new Date(Date.now() + 1000*60*60*24*1),
-                httpOnly:true
-            })
+                httpOnly: true,
+              });
 
 
             if(!isMatch){
                 return res.status(401).json({message:"User not found !"})
-            }
-            // else if(teacherLogin){
-            //     return res.status(200).json({message:"Teacher login successfully !"})
-            // }
-            else{
+            }else{
 
                 return res.status(200).json({message:"Student login successfully !"})
             }
@@ -129,6 +121,33 @@ router.post("/login", async (req, res)=>{
         return res.status(401).json({message:error})
     }
 })
+
+
+router.get("/refreshtoken", async (req, res)=>{
+    const {jwttoken}=req.cookies;
+  
+    if(!jwttoken){
+      return res.status(401).json({message:"ERROR"});
+    }
+  
+    try {
+  
+      const tokenData = jwt.verify(jwttoken,  process.env.SECRET_KEY);
+  
+      const user = await SignedUser.findOne({_id:tokenData._id});
+  
+      if(!user){
+        return res.status(400).json({message:"ERROR"});
+      }
+  
+      return res.status(200).json({user});
+      
+    } catch (error) {
+      return res.status(401).json({message:"ERROR"});
+    }
+  
+  })
+
 
 /*
 //get events route

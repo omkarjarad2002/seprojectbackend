@@ -1,8 +1,8 @@
 const express = require("express");
 const path = require("path");
 const router = express.Router();
-const SignedUser = require("../models/signupSchema");
-const User = require("../models/userSchema");
+const User = require("../models/signupSchema");
+const Register = require("../models/userSchema");
 const Contact = require("../models/contactSchema");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -38,12 +38,12 @@ router.post("/signup", async (req, res) => {
   }
 
   try {
-    const userExist = await SignedUser.findOne({ email: email });
+    const userExist = await User.findOne({ email: email });
 
     if (userExist) {
       return res.status(401).json({ message: "User allready exist !" });
     } else {
-      const user = new SignedUser({ email, password, cpassword });
+      const user = new User({ email, password, cpassword });
       await user.save();
       return res.status(200).json({ message: "User signup successfully !" });
     }
@@ -61,8 +61,8 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    const userExist = await SignedUser.findOne({ email: email }); 
-    const allreadyExist = await User.findOne({ email: email });
+    const userExist = await User.findOne({ email: email }); 
+    const allreadyExist = await Register.findOne({ email: email });
 
     if (userExist && !allreadyExist) {
       const user = new User({ name, email, phone, branch, year });
@@ -85,7 +85,7 @@ router.post("/login", async (req, res) => {
  
 
   try {
-    const userLogin = await SignedUser.findOne({ email: email});
+    const userLogin = await User.findOne({ email: email});
 
     if(!userLogin){
       return res.status(404).json({message:"Not found!"})
@@ -121,7 +121,7 @@ router.get("/refreshtoken", async (req, res) => {
   try {
     const tokenData = jwt.verify(jwttoken, process.env.SECRET_KEY);
 
-    const user = await SignedUser.findOne({ _id: tokenData._id });
+    const user = await User.findOne({ _id: tokenData._id });
 
     if (!user) {
       return res.status(400).json({ message: "ERROR" });

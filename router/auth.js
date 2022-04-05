@@ -65,7 +65,7 @@ router.post("/register", async (req, res) => {
     const allreadyExist = await Register.findOne({ email: email });
 
     if (userExist && !allreadyExist) {
-      const user = new User({ name, email, phone, branch, year });
+      const user = new Register({ name, email, phone, branch, year });
       await user.save();
       return res
         .status(200)

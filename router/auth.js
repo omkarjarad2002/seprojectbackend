@@ -89,6 +89,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const userLogin = await SignedUser.findOne({ email: email});
+    const Student = await SignedUser.findOne({ email: email, isadmin: false,isteacher:false }); 
     const Admin = await SignedUser.findOne({ email: email, isadmin: true,isteacher:false }); 
     const Teacher = await SignedUser.findOne({ email: email, isadmin: false,isteacher:true }); 
 
@@ -109,7 +110,7 @@ router.post("/login", async (req, res) => {
       }else if (Teacher) {
         return res.status(200).json({Teacher});
       }else{
-        return res.status(200).json({userLogin})
+        return res.status(200).json({Student})
       } 
     } else {
       return res.status(400).json({ message: "Invalid credentials !!" });

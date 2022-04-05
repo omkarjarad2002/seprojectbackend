@@ -90,7 +90,7 @@ router.post("/login", async (req, res) => {
   try {
     const userLogin = await SignedUser.findOne({ email: email});
     const Admin = await SignedUser.findOne({ email: email, isadmin: true,isteacher:false }); 
-    const Teacher = await SignedUser.findOne({ email: email, isadmin: true,isteacher:true }); 
+    const Teacher = await SignedUser.findOne({ email: email, isadmin: false,isteacher:true }); 
 
     if (userLogin) {
       const isMatch = await bcrypt.compare(password, userLogin.password);  

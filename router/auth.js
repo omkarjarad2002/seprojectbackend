@@ -88,8 +88,9 @@ router.post("/login", async (req, res) => {
   }
 
   try {
-    const userLogin = await SignedUser.findOne({ email: email });
-    const isadmin = await SignedUser.findOne({ email: email, isAdmin: true }); 
+    const userLogin = await SignedUser.findOne({ email: email});
+    const Admin = await SignedUser.findOne({ email: email, isadmin: true,isteacher:false }); 
+    const Teacher = await SignedUser.findOne({ email: email, isadmin: true,isteacher:true }); 
 
     if (userLogin) {
       const isMatch = await bcrypt.compare(password, userLogin.password);  
@@ -103,8 +104,10 @@ router.post("/login", async (req, res) => {
 
       if (!isMatch) {
         return res.status(401).json({ message: "User not found !" });
-      }else if (isadmin) {
-        return res.status(200).json({isadmin});
+      }else if (Admin) {
+        return res.status(200).json({Admin});
+      }else if (Teacher) {
+        return res.status(200).json({Teacher});
       }else{
         return res.status(200).json({userLogin})
       } 

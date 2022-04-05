@@ -82,19 +82,19 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return;
-  }
+ 
 
   try {
     const userLogin = await SignedUser.findOne({ email: email});
-    const Student = await SignedUser.findOne({ email: email, isadmin: false,isteacher:false }); 
-    const Admin = await SignedUser.findOne({ email: email, isadmin: true,isteacher:false }); 
-    const Teacher = await SignedUser.findOne({ email: email, isadmin: false,isteacher:true }); 
 
-    if (userLogin) {
+    if(!userLogin){
+      return res.status(404).json({message:"Not found!"})
+    }
+ 
       const isMatch = await bcrypt.compare(password, userLogin.password);  
+      if(!isMatch){
+        return res.status(401).json({message:"Wrong credentials"})
+      }
 
       const token = await userLogin.generateAuthToken();
 
@@ -102,21 +102,12 @@ router.post("/login", async (req, res) => {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
         httpOnly: true,
       });
+ 
+      res.json({user : userLogin})
 
-      if (!isMatch) {
-        return res.status(401).json({ message: "User not found !" });
-      }else if (Admin) {
-        return res.status(200).json({Admin});
-      }else if (Teacher) {
-        return res.status(200).json({Teacher});
-      }else{
-        return res.status(200).json({Student})
-      } 
-    } else {
-      return res.status(400).json({ message: "Invalid credentials !!" });
-    }
+
   } catch (error) {
-    return res.status(401).json({ message: error });
+    return res.status(500).json({ message: error });
   }
 });
 

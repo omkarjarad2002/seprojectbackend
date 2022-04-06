@@ -183,11 +183,11 @@ router.post("/emailSendForOtp", async (req, res) => {
 //changing password
 
 router.post("/changePassword", async (req, res) => {
-  let {otp, otpcode, email, password, cpassword } = req.body;
+  let {otp, otp_code, email, password, cpassword } = req.body;
   let data = await User.findOne({ email: email}); 
 
   const responce = {};
-  if (data && otp===otpcode) {
+  if (data && otp===otp_code) {
     let currentTime = new Date().getTime();
     let diff = data.expireIn - currentTime;
 

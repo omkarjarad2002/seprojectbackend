@@ -171,6 +171,8 @@ router.post("/emailSendForOtp", async (req, res) => {
       }
     });
     let final__otp = otpcode.toString();
+    console.log(email)
+    console.log(final__otp)
     res.status(200).json({ email, final__otp });
   } else {
     responceType.statusText = "error";

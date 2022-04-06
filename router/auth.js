@@ -1,5 +1,6 @@
 const express = require("express");
-const path = require("path");
+const path = require("path"); 
+const nodemailer = require("nodemailer");
 const router = express.Router();
 const User = require("../models/signupSchema");
 const Register = require("../models/userSchema");
@@ -9,6 +10,7 @@ const crypto = require("crypto");
 const multer = require("multer");
 const Event = require("../models/eventSchema");
 const nodemailer = require("nodemailer");
+const { response } = require("express");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
@@ -61,7 +63,7 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    const userExist = await User.findOne({ email: email }); 
+    const userExist = await User.findOne({ email: email });
     const allreadyExist = await Register.findOne({ email: email });
 
     if (userExist && !allreadyExist) {
@@ -82,30 +84,27 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
- 
 
   try {
-    const userLogin = await User.findOne({ email: email});
+    const userLogin = await User.findOne({ email: email });
 
-    if(!userLogin){
-      return res.status(404).json({message:"Not found!"})
+    if (!userLogin) {
+      return res.status(404).json({ message: "Not found!" });
     }
- 
-      const isMatch = await bcrypt.compare(password, userLogin.password);  
-      if(!isMatch){
-        return res.status(401).json({message:"Wrong credentials"})
-      }
 
-      const token = await userLogin.generateAuthToken();
+    const isMatch = await bcrypt.compare(password, userLogin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Wrong credentials" });
+    }
 
-      res.cookie("jwttoken", token, {
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        httpOnly: true,
-      });
- 
-      res.json({user : userLogin})
+    const token = await userLogin.generateAuthToken();
 
+    res.cookie("jwttoken", token, {
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      httpOnly: true,
+    });
 
+    res.json({ user: userLogin });
   } catch (error) {
     return res.status(500).json({ message: error });
   }
@@ -132,6 +131,89 @@ router.get("/refreshtoken", async (req, res) => {
     return res.status(401).json({ message: "ERROR" });
   }
 });
+
+
+
+//sending email verification code
+router.post("/emailSendForOtp", async (req, res) => {
+  const { email } = req.body;
+  let data = await User.findOne({ email: req.body.email });
+
+  const responceType = {};
+
+  if (data) { 
+
+    let otpcode = Math.floor(Math.random() * 10000 + 1);
+    responceType.statusText = "Success";
+    responceType.message = "Please check Your Email Id";
+
+    /////////////////////////////////////////////////////////////////
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "jaradomkar1@gmail.com",
+        pass: "1234@1234",
+      },
+    });
+
+    const mailOptions = {
+      from: "jaradomkar1@gmail.com",
+      to: req.body.email,
+      subject: "One time verification OTP from DIGITAL CAMPUS",
+      text: otpcode.toString(),
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error.message);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+    let final__otp = otpcode.toString();
+    res.status(200).json({ email, final__otp });
+  } else {
+    responceType.statusText = "error";
+    responceType.message = "Email Id not Exist";
+  }
+});
+
+//changing password
+
+router.post("/changePassword", async (req, res) => {
+  let {otp, otpcode, email, password, cpassword } = req.body;
+  let data = await User.findOne({ email: email}); 
+
+  const responce = {};
+  if (data && otp===otpcode) {
+    let currentTime = new Date().getTime();
+    let diff = data.expireIn - currentTime;
+
+    if (diff < 0) {
+      responce.message = "Token Expire";
+      responce.statusText = "error";
+      res.status(402).json(responce);
+    } else {
+      let user = await User.findOne({ email: email });
+      user.password = password;
+      user.cpassword = cpassword;
+
+      password = await bcrypt.hash(user.password, 12);
+      cpassword = await bcrypt.hash(user.cpassword, 12);
+      user.save();
+      responce.message = "Password changed Successfully";
+      responce.statusText = "Success";
+      res.status(200).json(responce);
+    }
+  } else {
+    responce.message = "Invalid Otp";
+    responce.statusText = "error";
+    res.status(401).json(responce);
+  }
+});
+
+
 
 /*
 //get events route

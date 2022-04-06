@@ -21,7 +21,7 @@
     "mongoose": "^6.2.4",
     "multer": "^1.4.4",
     "node": "^17.7.1",
-    "nodemailer": "^6.7.2",
+    "nodemailer": "^6.7.3",
     "nodemon": "^2.0.15",
     "path": "^0.12.7"
   }

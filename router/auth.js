@@ -136,7 +136,7 @@ router.get("/refreshtoken", async (req, res) => {
 //sending email verification code
 router.post("/emailSendForOtp", async (req, res) => {
   const { email } = req.body;
-  let data = await User.findOne({ email: req.body.email });
+  let data = await User.findOne({ email: email });
 
   const responceType = {};
 
@@ -152,29 +152,31 @@ router.post("/emailSendForOtp", async (req, res) => {
       service: "gmail",
       auth: {
         user: "jaradomkar1@gmail.com",
-        pass: "Omkar@2432",
+        pass: "Jarad@2432#",
       },
     });
 
     const mailOptions = {
       from: "jaradomkar1@gmail.com",
-      to: req.body.email,
+      to: email,
       subject: "One time verification OTP from DIGITAL CAMPUS",
       text: otpcode.toString(),
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.log(error.message);
+        res.status(401).json({error}); 
       } else {
         console.log("Email sent: " + info.response);
+        let final__otp = otpcode.toString();
+        console.log(email)
+        console.log(final__otp)
+        res.status(200).json({ email, final__otp }); 
       }
     });
-    let final__otp = otpcode.toString();
-    console.log(email)
-    console.log(final__otp)
-    res.status(200).json({ email, final__otp });
+     
   } else {
+    res.status(501).json({message:"Some error occured!"}); 
     responceType.statusText = "error";
     responceType.message = "Email Id not Exist";
   }
@@ -187,6 +189,7 @@ router.post("/changePassword", async (req, res) => {
   let data = await User.findOne({ email: email}); 
 
   const responce = {};
+
   if (data && otp===otp_code) {
     let currentTime = new Date().getTime();
     let diff = data.expireIn - currentTime;
@@ -196,13 +199,10 @@ router.post("/changePassword", async (req, res) => {
       responce.statusText = "error";
       res.status(402).json(responce);
     } else {
-      let user = await User.findOne({ email: email });
-      user.password = password;
-      user.cpassword = cpassword;
-
-      password = await bcrypt.hash(user.password, 12);
-      cpassword = await bcrypt.hash(user.cpassword, 12);
-      user.save();
+      let user = await User.findOne({ email: email }); 
+      user.password=password
+      user.cpassword=cpassword
+      await user.save();
       responce.message = "Password changed Successfully";
       responce.statusText = "Success";
       res.status(200).json(responce);

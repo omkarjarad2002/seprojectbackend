@@ -152,7 +152,7 @@ router.post("/emailSendForOtp", async (req, res) => {
       service: "gmail",
       auth: {
         user: "jaradomkar1@gmail.com",
-        pass: "1234@1234",
+        pass: "Omkar@2432",
       },
     });
 

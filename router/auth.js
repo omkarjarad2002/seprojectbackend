@@ -8,8 +8,7 @@ const Contact = require("../models/contactSchema");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const multer = require("multer");
-const Event = require("../models/eventSchema");
-const nodemailer = require("nodemailer");
+const Event = require("../models/eventSchema"); 
 const { response } = require("express");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//

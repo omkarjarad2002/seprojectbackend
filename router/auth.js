@@ -280,8 +280,10 @@ router.post("/changePassword", async (req, res) => {
 
 //*****************************************PROFILE PAGE***********************************//
 
-router.post("/getUserProfileInfo", async(req, res)=>{
+router.get("/getUserProfileInfo", async(req, res)=>{
   const {email} = req.body
+  console.log("userProfileInfo")
+  console.log({email})
   const UserInfo = await Register.findOne({email:email});
   return res.json({UserInfo});
 })

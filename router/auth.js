@@ -83,6 +83,9 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  console.log("from login route");
+  console.log(email);
+  console.log(password);
 
   try {
     const userLogin = await User.findOne({ email: email });
@@ -136,6 +139,8 @@ router.get("/refreshtoken", async (req, res) => {
 //sending email verification code
 router.post("/emailSendForOtp", async (req, res) => {
   const { email } = req.body;
+  console.log("from emailSendForOtp route");
+  console.log(email);
   let data = await User.findOne({ email: email });
 
   const responceType = {};
@@ -186,6 +191,7 @@ router.post("/emailSendForOtp", async (req, res) => {
 
 router.post("/changePassword", async (req, res) => {
   let {otp, otp_code, email, password, cpassword } = req.body;
+  console.log(`otp=${otp},otp_code=${otp_code},email=${email},password=${password},cpassword=${cpassword}`)
   let data = await User.findOne({ email: email}); 
 
   const responce = {};

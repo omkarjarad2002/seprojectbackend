@@ -147,6 +147,7 @@ router.post("/emailSendForOtp", async (req, res) => {
   console.log("from emailSendForOtp route");
   console.log(email);
   let data = await User.findOne({ email: email });
+  console.log(data)
 
   const responceType = {};
 
@@ -185,8 +186,8 @@ router.post("/emailSendForOtp", async (req, res) => {
       }
     });
      
-  } else {
-    res.status(501).json({message:"Some error occured!"}); 
+  } else { 
+    res.status(501).json({message:"Some error occured !"}); 
     responceType.statusText = "error";
     responceType.message = "Email Id not Exist";
   }
@@ -277,6 +278,21 @@ router.post("/changePassword", async (req, res) => {
 });
 
 
+//*****************************************PROFILE PAGE***********************************//
+
+router.post("/getUserProfileInfo", async(req, res)=>{
+  const {email} = req.body
+  const UserInfo = await Register.findOne({email:email});
+  return res.json({UserInfo});
+})
+
+
+// router.delete("/deleteProfileImage", async(req, res)=>{
+//   const responce = await User.findByIdAndDelete({_id: req.params.id})
+//   return res.json(responce);
+// })
+
+
 
 /*
 //get events route
@@ -288,23 +304,7 @@ router.get("/getEvents",async (req, res)=>{
 
 */
 
-//*****************************************PROFILE PAGE***********************************//
-/*
-router.get("/getUserProfileInfo/:id", async(req, res)=>{
-    const UserInfo = await User.findOne({_id: req.params.id});
-    return res.json({UserInfo});
-})
-
-router.post("/uploadProfileImage/:id", async(req, res)=>{
-    const uploadImageRes = await User.findByIdAndUpdate({_id: req.params.id, file});
-    return res.json(uploadImageRes);
-})
-
-router.delete("/deleteProfileImage", async(req, res)=>{
-    const responce = await User.findByIdAndDelete({_id: req.params.id})
-    return res.json(responce);
-})
-*/
+ 
 
 //*****************************************CLASSROOM PAGE***********************************//
 /*

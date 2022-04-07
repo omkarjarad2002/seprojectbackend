@@ -193,7 +193,7 @@ router.post("/emailSendForOtp", async (req, res) => {
 });
 
 //sending email verification code for signup route
-router.post("/emailSendForOtp", async (req, res) => {
+router.post("/emailSendForSignUpOtp", async (req, res) => {
   const { email } = req.body;
   console.log("from emailSendForOtp route");
   console.log(email);

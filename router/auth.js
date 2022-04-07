@@ -32,14 +32,16 @@ const upload = multer({ storage });
 
 // signup route
 router.post("/signup", async (req, res) => {
-  const { email, password, cpassword } = req.body;
+  const { otp, otp_code, email, password, cpassword } = req.body;
 
-  if (!email || !password || !cpassword) {
-    return;
+  if (!otp || !otp_code || !email || !password || !cpassword) {
+    return res.status(401).json({message:"Sorry something went wrong here !"});
   }
 
   try {
     const userExist = await User.findOne({ email: email });
+
+    if(otp == otp_code){
 
     if (userExist) {
       return res.status(401).json({ message: "User allready exist !" });
@@ -48,6 +50,9 @@ router.post("/signup", async (req, res) => {
       await user.save();
       return res.status(200).json({ message: "User signup successfully !" });
     }
+  }else{
+    return res.status(401).json({message:"Otp does not match !"})
+  }
   } catch (error) {
     return res.status(401).json({ message: error });
   }

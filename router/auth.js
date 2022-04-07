@@ -141,7 +141,7 @@ router.get("/refreshtoken", async (req, res) => {
 
 
 
-//sending email verification code
+//sending email verification code for forggoton password route
 router.post("/emailSendForOtp", async (req, res) => {
   const { email } = req.body;
   console.log("from emailSendForOtp route");
@@ -151,6 +151,57 @@ router.post("/emailSendForOtp", async (req, res) => {
   const responceType = {};
 
   if (data) { 
+
+    let otpcode = Math.floor(Math.random() * 10000 + 1);
+    responceType.statusText = "Success";
+    responceType.message = "Please check Your Email Id";
+
+    /////////////////////////////////////////////////////////////////
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "jaradomkar1@gmail.com",
+        pass: "Jarad@2432#",
+      },
+    });
+
+    const mailOptions = {
+      from: "jaradomkar1@gmail.com",
+      to: email,
+      subject: "One time verification OTP from DIGITAL CAMPUS",
+      text: otpcode.toString(),
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        res.status(401).json({error}); 
+      } else {
+        console.log("Email sent: " + info.response);
+        let final__otp = otpcode.toString();
+        console.log(email)
+        console.log(final__otp)
+        res.status(200).json({ email, final__otp }); 
+      }
+    });
+     
+  } else {
+    res.status(501).json({message:"Some error occured!"}); 
+    responceType.statusText = "error";
+    responceType.message = "Email Id not Exist";
+  }
+});
+
+//sending email verification code for signup route
+router.post("/emailSendForOtp", async (req, res) => {
+  const { email } = req.body;
+  console.log("from emailSendForOtp route");
+  console.log(email);
+  let data = await User.findOne({ email: email });
+
+  const responceType = {};
+
+  if (!data) { 
 
     let otpcode = Math.floor(Math.random() * 10000 + 1);
     responceType.statusText = "Success";

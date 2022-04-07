@@ -285,7 +285,12 @@ router.get("/getUserProfileInfo", async(req, res)=>{
   console.log("userProfileInfo")
   console.log({email})
   const UserInfo = await Register.findOne({email:email});
+
+  if(UserInfo){
   return res.json({UserInfo});
+  }else{
+    return res.status(401).json({message:"Data not found"})
+  }
 })
 
 

@@ -308,51 +308,105 @@ router.post("/getUserProfileInfo", async (req, res) => {
 //creating route for add Teachers
 
 router.post("/addTeacher", async (req, res) => {
-  const { name, email, phone, department, year, password, cpassword } =req.body; 
+  const { name, email, phone, department, year, password, cpassword } =
+    req.body;
 
-  if(!name || !email || !phone || !department || !year || !password || !cpassword){
+  if (
+    !name ||
+    !email ||
+    !phone ||
+    !department ||
+    !year ||
+    !password ||
+    !cpassword
+  ) {
     return;
   }
 
   try {
     const teacherExist = await teacher.findOne({ email });
-    const userExist = await User.findOne({ email });  
+    const userExist = await User.findOne({ email });
 
     if (!teacherExist && !userExist) {
-      const user = new User({email, password, cpassword, isadmin:false, isteacher:true})
-      const userteacher = new teacher({name, email, phone, department, year, password, cpassword});
+      const user = new User({
+        email,
+        password,
+        cpassword,
+        isadmin: false,
+        isteacher: true,
+      });
+      const userteacher = new teacher({
+        name,
+        email,
+        phone,
+        department,
+        year,
+        password,
+        cpassword,
+      });
       await user.save();
-      await userteacher.save();  
-      return res.status(201).json({message:"Success"})
-    }else{ 
-    return res.status(401).json({ message: "Error 1" });
-    }  
+      await userteacher.save();
 
+      //send email and password to teacher through email
+
+      const responceType = {};
+
+      responceType.statusText = "Success";
+      responceType.message = "Please check Your Email Id";
+
+      /////////////////////////////////////////////////////////////////
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "jaradomkar1@gmail.com",
+          pass: "Jarad@2432#",
+        },
+      });
+
+      const mailOptions = {
+        from: "jaradomkar1@gmail.com",
+        to: email,
+        subject: "Your Username and Password for DIGITAL CAMPUS is-",
+        text: `username :- ${email} and password :- ${password}`,
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          res.status(401).json({ error });
+        } else {
+          console.log("Email sent: " + info.response);
+          let email = email.toString();
+          let password = password.toString();
+          console.log(email);
+          console.log(password);
+        }
+      });
+
+      return res.status(201).json({ message: "Success" });
+    } else {
+      return res.status(401).json({ message: "Error 1" });
+    }
   } catch (error) {
     return res.status(501).json({ message: "Error 2" });
   }
 });
 
 //route for getting one specific teacher from email
-router.post("/getOneTeacher",async(req, res)=>{
-  const {email}  = req.body
-  if(!email)
-    return;
+router.post("/getOneTeacher", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return;
 
-  const getTeacherInfo = await teacher.findOne({email})
-  return res.json((getTeacherInfo))
-})
-
+  const getTeacherInfo = await teacher.findOne({ email });
+  return res.json(getTeacherInfo);
+});
 
 //route for detecting  all teachers
 
-router.get("/getAllTeachers", async(req, res)=>{
-  
+router.get("/getAllTeachers", async (req, res) => {
   const getTeachers = await teacher.find({});
-  return res.json({getTeachers});
-
-})
-
+  return res.json({ getTeachers });
+});
 
 //exporting router module from auth to router file
 

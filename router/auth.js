@@ -292,15 +292,11 @@ router.post("/changePassword", async (req, res) => {
 //*****************************************PROFILE PAGE***********************************//
 
 router.post("/getUserProfileInfo", async (req, res) => {
-  const { email } = req.body;
-  console.log("userProfileInfo");
-  console.log({ email });
-  const UserInfo = await Register.findOne({ email: email });
-  console.log(UserInfo);
+  const { email } = req.body; 
+  const UserInfo = await Register.findOne({ email: email }); 
   if (UserInfo) {
     return res.json({ UserInfo });
-  } else {
-    console.log("Not found");
+  } else { 
     return res.status(401).json({ message: "Data not found" });
   }
 });
@@ -394,11 +390,14 @@ router.post("/addTeacher", async (req, res) => {
 
 //route for getting one specific teacher from email
 router.post("/getOneTeacher", async (req, res) => {
-  const { email } = req.body;
-  if (!email) return;
-
-  const getTeacherInfo = await teacher.findOne({ email });
-  return res.json(getTeacherInfo);
+  const { email } = req.body; 
+  const TeacherInfo = await teacher.findOne({ email: email });
+  console.log(TeacherInfo);
+  if (TeacherInfo) {
+    return res.json({ TeacherInfo });
+  } else { 
+    return res.status(401).json({ message: "Data not found" });
+  }
 });
 
 //route for detecting  all teachers

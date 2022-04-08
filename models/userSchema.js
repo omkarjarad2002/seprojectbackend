@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         type:Number,
         required:true
     }, 
+    rollNumber:{
+        type:String,
+        required:true
+    }, 
     date:{
         type:Date,
         default:Date.now

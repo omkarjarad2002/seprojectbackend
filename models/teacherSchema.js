@@ -23,15 +23,7 @@ const teacherSchema = new mongoose.Schema({
     year:{
         type:String,
         required:true
-    },
-    password:{
-        type:String,
-        required:true
-    },
-    cpassword:{
-        type:String,
-        required:true
-    },
+    }, 
     date:{
         type:Date,
         default:Date.now
@@ -47,16 +39,7 @@ const teacherSchema = new mongoose.Schema({
 })
 
 
-//  We are hashing the password and securing it
-
-teacherSchema.pre('save', async function(next){    
-    if(this.isModified('password')){
-        this.password = await bcrypt.hash(this.password, 12);
-        this.cpassword = await bcrypt.hash(this.cpassword, 12)
-    }
-    next();
-})
-
+ 
 //generating token by using jwt and adding in to the userSchema
 
 teacherSchema.methods.generateAuthToken = async function(){

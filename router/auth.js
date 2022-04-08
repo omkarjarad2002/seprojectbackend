@@ -64,9 +64,9 @@ router.post("/signup", async (req, res) => {
 
 // registration route
 router.post("/register", async (req, res) => {
-  const { name, email, phone, branch, year } = req.body;
+  const { name, email, phone, branch, year, rollNumber} = req.body;
 
-  if (!name || !email || !phone || !branch || !year) {
+  if (!name || !email || !phone || !branch || !year || !rollNumber) {
     return;
   }
 
@@ -75,7 +75,7 @@ router.post("/register", async (req, res) => {
     const allreadyExist = await Register.findOne({ email: email });
 
     if (userExist && !allreadyExist) {
-      const user = new Register({ name, email, phone, branch, year });
+      const user = new Register({ name, email, phone, branch, year, rollNumber});
       await user.save();
       return res
         .status(200)
@@ -87,6 +87,7 @@ router.post("/register", async (req, res) => {
         phone,
         branch,
         year,
+        rollNumber
       });
       await user.save();
       return res
@@ -261,7 +262,7 @@ router.post("/changePassword", async (req, res) => {
   console.log(
     `otp=${otp},otp_code=${otp_code},email=${email},password=${password},cpassword=${cpassword}`
   );
-  let data = await User.findOne({ email: email });
+  let data = await User.findOne({ email: email }); 
 
   const responce = {};
 

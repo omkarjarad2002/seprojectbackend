@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const jwt = require("jsonwebtoken") 
+const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const router = express.Router();
 const User = require("../models/signupSchema");
@@ -14,7 +14,9 @@ const { response } = require("express");
 const { findOneAndUpdate, find, findOne } = require("../models/signupSchema");
 const teacher = require("../models/teacherSchema");
 const { error } = require("console");
-const { request } = require("http"); 
+const { request } = require("http");
+const present = require("../models/presentSchema");
+const upsent = require("../models/upsentSchema");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
@@ -47,7 +49,6 @@ router.post("/signup", async (req, res) => {
 
   try {
     const userExist = await User.findOne({ email: email });
-     
 
     if (otp == otp_code) {
       if (userExist) {
@@ -55,12 +56,12 @@ router.post("/signup", async (req, res) => {
       } else {
         const user = new User({ email, password, cpassword });
         await user.save();
-        
+
         const token = await user.generateAuthToken();
 
         res.cookie("jwttoken", token, {
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        httpOnly: true,
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+          httpOnly: true,
         });
 
         return res.status(200).json({ token });
@@ -75,7 +76,7 @@ router.post("/signup", async (req, res) => {
 
 // registration route
 router.post("/register", async (req, res) => {
-  const { name, email, phone, branch, year, rollNumber} = req.body;
+  const { name, email, phone, branch, year, rollNumber } = req.body;
 
   if (!name || !email || !phone || !branch || !year || !rollNumber) {
     return;
@@ -86,7 +87,14 @@ router.post("/register", async (req, res) => {
     const allreadyExist = await Register.findOne({ email: email });
 
     if (userExist && !allreadyExist) {
-      const user = new Register({ name, email, phone, branch, year, rollNumber});
+      const user = new Register({
+        name,
+        email,
+        phone,
+        branch,
+        year,
+        rollNumber,
+      });
       await user.save();
       return res
         .status(200)
@@ -98,7 +106,7 @@ router.post("/register", async (req, res) => {
         phone,
         branch,
         year,
-        rollNumber
+        rollNumber,
       });
       await user.save();
       return res
@@ -138,17 +146,17 @@ router.post("/login", async (req, res) => {
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
       httpOnly: true,
     });
-    console.log(token)
+    console.log(token);
 
-    res.json({ user: userLogin, token});
+    res.json({ user: userLogin, token });
   } catch (error) {
     return res.status(500).json({ message: error });
   }
 });
 
 router.get("/refreshtoken", async (req, res) => {
-  const jwttoken  = req.headers["authorization"];
-  console.log(jwttoken)
+  const jwttoken = req.headers["authorization"];
+  console.log(jwttoken);
 
   if (!jwttoken) {
     return res.status(401).json({ message: "ERROR 0" });
@@ -159,12 +167,12 @@ router.get("/refreshtoken", async (req, res) => {
 
     const tokenUser = await User.findOne({ _id: tokenData._id });
 
-    if (!tokenUser) { 
+    if (!tokenUser) {
       return res.status(400).json({ message: "ERROR 1" });
-    } 
+    }
     return res.status(200).json({ tokenUser });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(401).json({ message: "ERROR 2" });
   }
 });
@@ -275,7 +283,7 @@ router.post("/changePassword", async (req, res) => {
   console.log(
     `otp=${otp},otp_code=${otp_code},email=${email},password=${password},cpassword=${cpassword}`
   );
-  let data = await User.findOne({ email: email }); 
+  let data = await User.findOne({ email: email });
 
   const responce = {};
 
@@ -306,11 +314,11 @@ router.post("/changePassword", async (req, res) => {
 //*****************************************PROFILE PAGE***********************************//
 
 router.post("/getUserProfileInfo", async (req, res) => {
-  const { email } = req.body; 
-  const UserInfo = await Register.findOne({ email: email }); 
+  const { email } = req.body;
+  const UserInfo = await Register.findOne({ email: email });
   if (UserInfo) {
     return res.json({ UserInfo });
-  } else { 
+  } else {
     return res.status(401).json({ message: "Data not found" });
   }
 });
@@ -404,12 +412,12 @@ router.post("/addTeacher", async (req, res) => {
 
 //route for getting one specific teacher from email
 router.post("/getOneTeacher", async (req, res) => {
-  const { email } = req.body; 
+  const { email } = req.body;
   const TeacherInfo = await teacher.findOne({ email: email });
   console.log(TeacherInfo);
   if (TeacherInfo) {
     return res.json({ TeacherInfo });
-  } else { 
+  } else {
     return res.status(401).json({ message: "Data not found" });
   }
 });
@@ -420,6 +428,38 @@ router.get("/getAllTeachers", async (req, res) => {
   const getTeachers = await teacher.find({});
   return res.json({ getTeachers });
 });
+
+//route for present students
+router.post("/present", async (req, res) => {
+  const { rollNumber, subject, division } = req.body;
+
+  try {
+    const user = new present({ rollNumber, subject, division });
+    await user.save();
+  } catch (error) {
+    return res.status(401).json({ message: "ERROR" });
+  }
+});
+
+//route for absent students
+router.post("/upsent", async (req, res) => {
+  const { rollNumber, subject, division } = req.body;
+
+  try {
+    const user = new upsent({ rollNumber, subject, division });
+    await user.save();
+  } catch (error) {
+    return res.status(401).json({ message: "ERROR" });
+  }
+});
+
+//get all teachers for management route
+router.get("/getAllTeachers",async (req, res)=>{
+
+  const teachers = await teacher.find({})
+  return res.json({teachers})
+
+})
 
 //exporting router module from auth to router file
 

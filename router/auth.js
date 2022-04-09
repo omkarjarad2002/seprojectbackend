@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const jwt = require("jsonwebtoken") 
 const nodemailer = require("nodemailer");
 const router = express.Router();
 const User = require("../models/signupSchema");
@@ -13,6 +14,7 @@ const { response } = require("express");
 const { findOneAndUpdate, find, findOne } = require("../models/signupSchema");
 const teacher = require("../models/teacherSchema");
 const { error } = require("console");
+const { request } = require("http"); 
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
@@ -128,31 +130,32 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
     });
 
-    res.json({ user: userLogin });
+    res.json({ user: userLogin, token});
   } catch (error) {
     return res.status(500).json({ message: error });
   }
 });
 
 router.get("/refreshtoken", async (req, res) => {
-  const { jwttoken } = req.cookies;
+  const jwttoken  = req.headers["authorization"];
+  console.log(jwttoken)
 
   if (!jwttoken) {
-    return res.status(401).json({ message: "ERROR" });
+    return res.status(401).json({ message: "ERROR 0" });
   }
 
   try {
     const tokenData = jwt.verify(jwttoken, process.env.SECRET_KEY);
 
-    const user = await User.findOne({ _id: tokenData._id });
+    const tokenUser = await User.findOne({ _id: tokenData._id });
 
-    if (!user) {
-      return res.status(400).json({ message: "ERROR" });
-    }
-
-    return res.status(200).json({ user });
+    if (!tokenUser) { 
+      return res.status(400).json({ message: "ERROR 1" });
+    } 
+    return res.status(200).json({ tokenUser });
   } catch (error) {
-    return res.status(401).json({ message: "ERROR" });
+    console.log(error)
+    return res.status(401).json({ message: "ERROR 2" });
   }
 });
 

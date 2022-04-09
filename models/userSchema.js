@@ -1,4 +1,6 @@
-const mongoose = require("mongoose")
+const jwt = require("jsonwebtoken")
+const mongoose = require("mongoose") 
+const bcrypt = require("bcryptjs")
 
 const userSchema = new mongoose.Schema({
 
@@ -32,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     tokens:[
         {
-            refreshtoken:{
+            token:{
                 type:String,
                 required:true
             }
@@ -43,13 +45,11 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.generateAuthToken=async function(){
     try {
-        const generateRefreshToken = jwt.sign({_id:this._id}, process.env.REFRESH__TOKEN);
-        const generateAccessToken = jwt.sign({_id:this._id}, process.env.ACCESS__TOKEN);
-        this.tokens = this.tokens.concat({refreshtoken:generateRefreshToken, accesstoken:generateAccessToken})
-
+        let generateToken = jwt.sign({_id:this._id},process.env.SECRET_KEY)
+        this.tokens = this.tokens.concat({ token : generateToken })
         await this.save();
 
-        return refreshtoken;
+        return generateToken;
         
     } catch (error) {
         console.log("ERROR")

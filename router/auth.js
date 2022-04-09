@@ -47,6 +47,7 @@ router.post("/signup", async (req, res) => {
 
   try {
     const userExist = await User.findOne({ email: email });
+     
 
     if (otp == otp_code) {
       if (userExist) {
@@ -54,7 +55,15 @@ router.post("/signup", async (req, res) => {
       } else {
         const user = new User({ email, password, cpassword });
         await user.save();
-        return res.status(200).json({ message: "User signup successfully !" });
+        
+        const token = await user.generateAuthToken();
+
+        res.cookie("jwttoken", token, {
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        httpOnly: true,
+        });
+
+        return res.status(200).json({ token });
       }
     } else {
       return res.status(401).json({ message: "Otp does not match !" });
@@ -129,6 +138,7 @@ router.post("/login", async (req, res) => {
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
       httpOnly: true,
     });
+    console.log(token)
 
     res.json({ user: userLogin, token});
   } catch (error) {

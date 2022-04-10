@@ -461,6 +461,32 @@ router.get("/getAllTeachers",async (req, res)=>{
 
 })
 
+
+//get all students for presenti route
+router.post("/getStudent", async(req, res)=>{
+
+  const { branch, year}=req.body
+
+  if(!branch || !year){
+    return;
+  }
+
+  try {
+
+    const students = await Register.find({branch:branch, year:year});
+
+    if(!students){
+      return res.status(401).json({message:"Student not found !"})
+    }else{
+      return res.status(200).json({students})
+    }
+    
+  } catch (error) {
+    return res.status(501).json({message:"Internal server error !"})
+  }
+
+})
+
 //exporting router module from auth to router file
 
 module.exports = router;

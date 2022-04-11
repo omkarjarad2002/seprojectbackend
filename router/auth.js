@@ -465,7 +465,7 @@ router.get("/getAllTeachers",async (req, res)=>{
 //get all students for presenti route
 router.post("/getStudent", async(req, res)=>{
 
-  const { branch, year}=req.body
+  const { branch, year,subject}=req.body
 
   if(!branch || !year){
     return;

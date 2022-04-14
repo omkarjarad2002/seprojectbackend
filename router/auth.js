@@ -15,8 +15,7 @@ const { findOneAndUpdate, find, findOne } = require("../models/signupSchema");
 const teacher = require("../models/teacherSchema");
 const { error } = require("console");
 const { request } = require("http");
-const present = require("../models/presentSchema");
-const upsent = require("../models/upsentSchema");
+const present = require("../models/presentSchema"); 
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
@@ -429,29 +428,42 @@ router.get("/getAllTeachers", async (req, res) => {
   return res.json({ getTeachers });
 });
 
-//route for present students
-router.post("/present", async (req, res) => {
-  const { rollNumber, subject, division } = req.body;
+//route for saving branch year and subject of specific presenti
+router.post("/presentiInfo", async (req, res) => {
+  const { branch,year,subject} = req.body;
 
   try {
-    const user = new present({ rollNumber, subject, division });
+    const user = new present({ branch,year,subject });
     await user.save();
+
+    const _id = user._id
+    res.status(201).json({_id})
   } catch (error) {
     return res.status(401).json({ message: "ERROR" });
   }
 });
 
-//route for absent students
-router.post("/upsent", async (req, res) => {
-  const { rollNumber, subject, division } = req.body;
+//route of saving presenti and upsenti
+router.post("/presentUpsent", async(req, res)=>{
+  const {_id,P_roll_numbers,U_roll_numbers}= req.body;
 
   try {
-    const user = new upsent({ rollNumber, subject, division });
-    await user.save();
+
+    const dataExist = await present.findOneAndUpdate({
+      _id:_id
+    },{ $push:{ presentRollNumbers: P_roll_numbers , upsentsRollNumbers: U_roll_numbers}})
+
+    if(dataExist){
+      res.status(201).json({message:"Success"}) 
+    }else{
+      res.status(401).json({message:"Does not exists"})
+    }
+    
   } catch (error) {
-    return res.status(401).json({ message: "ERROR" });
+    return res.status(501).json({message:"Internal server error occured !"})
   }
-});
+})
+ 
 
 //get all teachers for management route
 router.get("/getAllTeachers",async (req, res)=>{

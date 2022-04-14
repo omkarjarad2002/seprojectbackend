@@ -19,20 +19,7 @@ const present = require("../models/presentSchema");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
-  filename: (req, file, cb) => {
-    const uniqueFileName = `${Date.now()}-${crypto
-      .randomBytes(6)
-      .toString("hex")}${path.extname(file.originalname)}`;
 
-    cb(null, uniqueFileName);
-  },
-});
-
-const upload = multer({ storage });
 
 //*****************************************HOME PAGE***********************************//
 
@@ -427,55 +414,6 @@ router.get("/getAllTeachers", async (req, res) => {
   const getTeachers = await teacher.find({});
   return res.json({ getTeachers });
 });
-
-//route for saving branch year and subject of specific presenti
-router.post("/presentiInfo", async (req, res) => {
-  const { branch,year,subject,DayTime} = req.body;
-
-  try {
-
-    const exist=await present.findOne({DayTime:DayTime})
-
-    if(!exist){
-      const user = new present({ branch,year,subject,DayTime });
-      await user.save();
-      const _id = user._id 
-      const time = user.DayTime
-      res.status(201).json({_id,DayTime})
-    }else{
-      const user = present({branch,year,subject,DayTime})
-      const _id = user._id 
-      const time = user.DayTime
-      res.status(201).json({_id,DayTime})
-      await user.save();
-    }  
-  } catch (error) {
-    console.log(error)
-    return res.status(401).json({ message: "ERROR" });
-  }
-});
-
-//route of saving presenti and upsenti
-router.post("/presentUpsent", async(req, res)=>{
-  const {_id,DayTime,P_roll_numbers}= req.body;
-
-  try {
-
-    const dataExist = await present.findOneAndUpdate({
-      _id:_id,DayTime:DayTime
-    },{ $push:{ presentRollNumbers: P_roll_numbers}})
-    // },{ $push:{ presentRollNumbers: P_roll_numbers , upsentsRollNumbers: U_roll_numbers}})
-
-    if(dataExist){
-      res.status(201).json({message:"Success"}) 
-    }else{
-      res.status(401).json({message:"Does not exists"})
-    }
-    
-  } catch (error) {
-    return res.status(501).json({message:"Internal server error occured !"})
-  }
-})
  
 
 //get all teachers for management route
@@ -511,6 +449,77 @@ router.post("/getStudent", async(req, res)=>{
   }
 
 })
+
+
+//route for saving branch year and subject of specific presenti
+router.post("/presentiInfo", async (req, res) => {
+  const { branch,year,subject,DayTime} = req.body;
+
+  try {
+
+    const exist=await present.findOne({DayTime:DayTime})
+
+    if(!exist){
+      const user = new present({ branch,year,subject,DayTime });
+      await user.save();
+      const _id = user._id
+      const time = user.DayTime
+      res.status(201).json({_id,DayTime})
+    }else{
+      const user = present({branch,year,subject,DayTime})
+      const _id = user._id 
+      const time = user.DayTime
+      res.status(201).json({_id,DayTime})
+      await user.save();
+    }  
+  } catch (error) {
+    console.log(error)
+    return res.status(401).json({ message: "ERROR" });
+  }
+});
+
+//route of saving presenti and upsenti
+router.post("/presentUpsent", async(req, res)=>{
+  const {_id,DayTime,P_roll_numbers}= req.body; 
+  try {
+
+    const dataExist = await present.findOneAndUpdate({
+      _id:_id,DayTime:DayTime
+    },{ $push:{ presentRollNumbers: P_roll_numbers}})
+
+    if(dataExist){
+      res.status(201).json({message:"Success"}) 
+    }else{
+      res.status(401).json({message:"Does not exists"})
+    }
+    
+  } catch (error) {
+    return res.status(501).json({message:"Internal server error occured !"})
+  }
+})
+ 
+
+//total attendance of a perticular student
+router.post("/getTotalAttendance", async(req, res)=>{
+  const {branch,rollNumber} = req.body
+
+  try {
+
+    const totalLectures = await present.find({branch:branch})
+    
+    const student = await present.find({presentRollNumbers:rollNumber})
+
+    const totalPercentage = (student.length)/(totalLectures.length/100)
+
+    return res.status(201).json({"attendance":totalPercentage})
+
+  } catch (error) {
+    res.status(501).json({message:"Internal server error !"})
+  }
+
+})
+
+
 
 //exporting router module from auth to router file
 

@@ -13,12 +13,11 @@ const presentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  time:{
+  DayTime:{
     type:String,
     required:true
   },
-  presentRollNumbers: [{type:String}],
-  upsentsRollNumbers: [{type:String}], 
+  presentRollNumbers: [{type:String}], 
   date: {
     type: Date,
     default: Date.now,

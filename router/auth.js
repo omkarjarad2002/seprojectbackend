@@ -511,7 +511,7 @@ router.post("/getTotalAttendance", async(req, res)=>{
 
     const totalPercentage = (student.length)/(totalLectures.length/100)
 
-    return res.status(201).json({"attendance":totalPercentage})
+    return res.status(201).json({totalPercentage})
 
   } catch (error) {
     res.status(501).json({message:"Internal server error !"})

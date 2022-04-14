@@ -445,13 +445,14 @@ router.post("/presentiInfo", async (req, res) => {
 
 //route of saving presenti and upsenti
 router.post("/presentUpsent", async(req, res)=>{
-  const {_id,P_roll_numbers,U_roll_numbers}= req.body;
+  const {_id,P_roll_numbers}= req.body;
 
   try {
 
     const dataExist = await present.findOneAndUpdate({
       _id:_id
-    },{ $push:{ presentRollNumbers: P_roll_numbers , upsentsRollNumbers: U_roll_numbers}})
+    },{ $push:{ presentRollNumbers: P_roll_numbers}})
+    // },{ $push:{ presentRollNumbers: P_roll_numbers , upsentsRollNumbers: U_roll_numbers}})
 
     if(dataExist){
       res.status(201).json({message:"Success"}) 

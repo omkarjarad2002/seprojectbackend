@@ -436,8 +436,9 @@ router.post("/presentiInfo", async (req, res) => {
     const user = new present({ branch,year,subject });
     await user.save();
 
-    const _id = user._id
-    res.status(201).json({_id})
+    const _id = user._id 
+    const time = user.time
+    res.status(201).json({_id,time})
   } catch (error) {
     return res.status(401).json({ message: "ERROR" });
   }
@@ -445,12 +446,12 @@ router.post("/presentiInfo", async (req, res) => {
 
 //route of saving presenti and upsenti
 router.post("/presentUpsent", async(req, res)=>{
-  const {_id,P_roll_numbers}= req.body;
+  const {_id,time,P_roll_numbers}= req.body;
 
   try {
 
     const dataExist = await present.findOneAndUpdate({
-      _id:_id
+      _id:_id,time:time
     },{ $push:{ presentRollNumbers: P_roll_numbers}})
     // },{ $push:{ presentRollNumbers: P_roll_numbers , upsentsRollNumbers: U_roll_numbers}})
 

@@ -13,6 +13,10 @@ const presentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  time:{
+    type:String,
+    required:true
+  },
   presentRollNumbers: [{type:String}],
   upsentsRollNumbers: [{type:String}], 
   date: {

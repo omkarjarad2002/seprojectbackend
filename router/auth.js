@@ -415,7 +415,6 @@ router.get("/getAllTeachers", async (req, res) => {
   return res.json({ getTeachers });
 });
  
-
 //get all teachers for management route
 router.get("/getAllTeachers",async (req, res)=>{
 
@@ -423,7 +422,6 @@ router.get("/getAllTeachers",async (req, res)=>{
   return res.json({teachers})
 
 })
-
 
 //get all students for presenti route
 router.post("/getStudent", async(req, res)=>{
@@ -449,7 +447,6 @@ router.post("/getStudent", async(req, res)=>{
   }
 
 })
-
 
 //route for saving branch year and subject of specific presenti
 router.post("/presentiInfo", async (req, res) => {
@@ -498,7 +495,6 @@ router.post("/presentUpsent", async(req, res)=>{
   }
 })
  
-
 //total attendance of a perticular student
 router.post("/getTotalAttendance", async(req, res)=>{
   const {branch,rollNumber} = req.body
@@ -519,6 +515,30 @@ router.post("/getTotalAttendance", async(req, res)=>{
 
 })
 
+router.post("/getDayPresenti", async(req, res)=>{
+  const {branch,year,subject,DayTime} = req.body
+
+  if(!branch || !year || !subject || !DayTime){
+    return res.status(501).json({message:"Internal server error !"})
+  }
+
+  try {
+
+    const DataExists = await present.findOne({branch:branch,year:year,subject:subject,DayTime:DayTime});
+
+    if(!DataExists){
+      return res.status(401).json({message:"Data not found !"})
+    }else{
+      const rollNumbers = DataExists.presentRollNumbers;
+      return res.status(201).json({rollNumbers})
+
+    }
+    
+  } catch (error) {
+    return res.status(501).json({message:"Internal server error !"})
+  }
+})
+ 
 
 
 //exporting router module from auth to router file

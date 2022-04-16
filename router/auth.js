@@ -530,7 +530,7 @@ router.post("/getDayPresenti", async(req, res)=>{
       return res.status(401).json({message:"Data not found !"})
     }else{
       const rollNumbers = DataExists.presentRollNumbers;
-      return res.status(201).json({rollNumbers})
+      return res.status(201).json({"attendance":rollNumbers})
 
     }
     

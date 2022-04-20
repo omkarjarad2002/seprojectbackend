@@ -62,10 +62,6 @@ router.post("/signup", async (req, res) => {
 router.post("/register", async (req, res) => {
   const { name, email, phone, branch, year, rollNumber } = req.body;
 
-  if (!name || !email || !phone || !branch || !year || !rollNumber) {
-    return;
-  }
-
   try {
     const userExist = await User.findOne({ email: email });
     const allreadyExist = await Register.findOne({ email: email });

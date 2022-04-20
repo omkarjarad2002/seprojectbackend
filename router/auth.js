@@ -15,11 +15,9 @@ const { findOneAndUpdate, find, findOne } = require("../models/signupSchema");
 const teacher = require("../models/teacherSchema");
 const { error } = require("console");
 const { request } = require("http");
-const present = require("../models/presentSchema"); 
+const present = require("../models/presentSchema");
 
 //*****************************************UPLOAD IMAGE THROUGH MULTER***********************************//
-
-
 
 //*****************************************HOME PAGE***********************************//
 
@@ -86,7 +84,7 @@ router.post("/register", async (req, res) => {
         .status(200)
         .json({ message: "User registered successfully !" });
     } else if (allreadyExist) {
-      const user = await Register.findOneAndUpdate({
+      const userupdate = await Register.findOneAndUpdate({
         name,
         email,
         phone,
@@ -94,7 +92,7 @@ router.post("/register", async (req, res) => {
         year,
         rollNumber,
       });
-      await user.save();
+      await userupdate.save();
       return res
         .status(200)
         .json({ message: "student data updated successfuly!" });
@@ -414,132 +412,134 @@ router.get("/getAllTeachers", async (req, res) => {
   const getTeachers = await teacher.find({});
   return res.json({ getTeachers });
 });
- 
+
 //get all teachers for management route
-router.get("/getAllTeachers",async (req, res)=>{
-
-  const teachers = await teacher.find({})
-  return res.json({teachers})
-
-})
+router.get("/getAllTeachers", async (req, res) => {
+  const teachers = await teacher.find({});
+  return res.json({ teachers });
+});
 
 //get all students for presenti route
-router.post("/getStudent", async(req, res)=>{
+router.post("/getStudent", async (req, res) => {
+  const { branch, year, subject } = req.body;
 
-  const { branch, year,subject}=req.body
-
-  if(!branch || !year){
+  if (!branch || !year) {
     return;
   }
 
   try {
+    const students = await Register.find({ branch: branch, year: year });
 
-    const students = await Register.find({branch:branch, year:year});
-
-    if(!students){
-      return res.status(401).json({message:"Student not found !"})
-    }else{
-      return res.status(200).json({students})
+    if (!students) {
+      return res.status(401).json({ message: "Student not found !" });
+    } else {
+      return res.status(200).json({ students });
     }
-    
   } catch (error) {
-    return res.status(501).json({message:"Internal server error !"})
+    return res.status(501).json({ message: "Internal server error !" });
   }
-
-})
+});
 
 //route for saving branch year and subject of specific presenti
 router.post("/presentiInfo", async (req, res) => {
-  const { branch,year,subject,DayTime} = req.body;
+  const { branch, year, subject, DayTime } = req.body;
 
   try {
+    const exist = await present.findOne({ DayTime: DayTime });
 
-    const exist=await present.findOne({DayTime:DayTime})
-
-    if(!exist){
-      const user = new present({ branch,year,subject,DayTime });
+    if (!exist) {
+      const user = new present({ branch, year, subject, DayTime });
       await user.save();
-      const _id = user._id
-      const time = user.DayTime
-      res.status(201).json({_id,DayTime})
-    }else{
-      const user = present({branch,year,subject,DayTime})
-      const _id = user._id 
-      const time = user.DayTime
-      res.status(201).json({_id,DayTime})
+      const _id = user._id;
+      const time = user.DayTime;
+      res.status(201).json({ _id, DayTime });
+    } else {
+      const user = present({ branch, year, subject, DayTime });
+      const _id = user._id;
+      const time = user.DayTime;
+      res.status(201).json({ _id, DayTime });
       await user.save();
-    }  
+    }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(401).json({ message: "ERROR" });
   }
 });
 
 //route of saving presenti and upsenti
-router.post("/presentUpsent", async(req, res)=>{
-  const {_id,DayTime,P_roll_numbers}= req.body; 
+router.post("/presentUpsent", async (req, res) => {
+  const { _id, DayTime, P_roll_numbers } = req.body;
   try {
+    const dataExist = await present.findOneAndUpdate(
+      {
+        _id: _id,
+        DayTime: DayTime,
+      },
+      { $push: { presentRollNumbers: P_roll_numbers } }
+    );
 
-    const dataExist = await present.findOneAndUpdate({
-      _id:_id,DayTime:DayTime
-    },{ $push:{ presentRollNumbers: P_roll_numbers}})
-
-    if(dataExist){
-      res.status(201).json({message:"Success"}) 
-    }else{
-      res.status(401).json({message:"Does not exists"})
+    if (dataExist) {
+      res.status(201).json({ message: "Success" });
+    } else {
+      res.status(401).json({ message: "Does not exists" });
     }
-    
   } catch (error) {
-    return res.status(501).json({message:"Internal server error occured !"})
+    return res.status(501).json({ message: "Internal server error occured !" });
   }
-})
- 
+});
+
 //total attendance of a perticular student
-router.post("/getTotalAttendance", async(req, res)=>{
-  const {branch,rollNumber} = req.body
+router.post("/getTotalAttendance", async (req, res) => {
+  const { branch, rollNumber } = req.body;
 
   try {
+    const totalLectures = await present.find({ branch: branch });
 
-    const totalLectures = await present.find({branch:branch})
-    
-    const student = await present.find({presentRollNumbers:rollNumber})
+    const student = await present.find({ presentRollNumbers: rollNumber });
 
-    const totalPercentage = (student.length)/(totalLectures.length/100)
+    const totalPercentage = student.length / (totalLectures.length / 100);
 
-    return res.status(201).json({totalPercentage})
-
+    return res.status(201).json({ totalPercentage });
   } catch (error) {
-    res.status(501).json({message:"Internal server error !"})
+    res.status(501).json({ message: "Internal server error !" });
   }
+});
 
-})
+router.post("/getDayPresenti", async (req, res) => {
+  const { branch, year, subject, DayTime } = req.body;
 
-router.post("/getDayPresenti", async(req, res)=>{
-  const {branch,year,subject,DayTime} = req.body
-
-  if(!branch || !year || !subject || !DayTime){
-    return res.status(501).json({message:"Internal server error !"})
+  if (!branch || !year || !subject || !DayTime) {
+    return res.status(501).json({ message: "Internal server error !" });
   }
 
   try {
+    const DataExists = await present.findOne({
+      $and: [
+        {
+          branch: branch,
+        },
+        {
+          year: year,
+        },
+        {
+          subject: subject,
+        },
+        {
+          DayTime: DayTime,
+        },
+      ],
+    });
 
-    const DataExists = await present.findOne({branch:branch,year:year,subject:subject,DayTime:DayTime});
-
-    if(!DataExists){
-      return res.status(401).json({message:"Data not found !"})
-    }else{
+    if (!DataExists) {
+      return res.status(401).json({ message: "Data not found !" });
+    } else {
       const rollNumbers = DataExists.presentRollNumbers;
-      return res.status(201).json({attendance:rollNumbers})
-
+      return res.status(201).json({ attendance: rollNumbers });
     }
-    
   } catch (error) {
-    return res.status(501).json({message:"Internal server error !"})
+    return res.status(501).json({ message: "Internal server error !" });
   }
-})
- 
-
+});
 
 //exporting router module from auth to router file
 

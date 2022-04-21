@@ -537,6 +537,16 @@ router.post("/getDayPresenti", async (req, res) => {
   }
 });
 
+//making route to delete teacher
+router.post("/deleteTeacher", async (req, res) => {
+  const { email } = req.body;
+
+  const userExist = await User.findOneAndDelete({ email: email });
+  const teacherExist = await teacher.findOneAndDelete({ email: email });
+
+  return res.status(201).json({ message: "Success" });
+});
+
 //exporting router module from auth to router file
 
 module.exports = router;

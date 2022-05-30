@@ -9,7 +9,6 @@ const Contact = require("../models/contactSchema");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const multer = require("multer");
-const Event = require("../models/eventSchema");
 const { response } = require("express");
 const { findOneAndUpdate, find, findOne } = require("../models/signupSchema");
 const teacher = require("../models/teacherSchema");
@@ -104,9 +103,6 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  console.log("from login route");
-  console.log(email);
-  console.log(password);
 
   try {
     const userLogin = await User.findOne({ email: email });
@@ -207,62 +203,9 @@ router.post("/emailSendForOtp", async (req, res) => {
   }
 });
 
-//sending email verification code for signup route
-router.post("/emailSendForSignUpOtp", async (req, res) => {
-  const { email } = req.body;
-  console.log("from emailSendForOtp route");
-  console.log(email);
-  let data = await User.findOne({ email: email });
-
-  const responceType = {};
-
-  if (!data) {
-    let otpcode = Math.floor(Math.random() * 10000 + 1);
-    responceType.statusText = "Success";
-    responceType.message = "Please check Your Email Id";
-
-    /////////////////////////////////////////////////////////////////
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "jaradomkar1@gmail.com",
-        pass: "Jarad@2432#",
-      },
-    });
-
-    const mailOptions = {
-      from: "jaradomkar1@gmail.com",
-      to: email,
-      subject: "One time verification OTP from DIGITAL CAMPUS",
-      text: otpcode.toString(),
-    };
-
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        res.status(401).json({ error });
-      } else {
-        console.log("Email sent: " + info.response);
-        let final__otp = otpcode.toString();
-        console.log(email);
-        console.log(final__otp);
-        res.status(200).json({ email, final__otp });
-      }
-    });
-  } else {
-    res.status(501).json({ message: "Some error occured!" });
-    responceType.statusText = "error";
-    responceType.message = "Email Id not Exist";
-  }
-});
-
-//changing password
-
 router.post("/changePassword", async (req, res) => {
   let { otp, otp_code, email, password, cpassword } = req.body;
-  console.log(
-    `otp=${otp},otp_code=${otp_code},email=${email},password=${password},cpassword=${cpassword}`
-  );
+
   let data = await User.findOne({ email: email });
 
   const responce = {};
@@ -539,6 +482,16 @@ router.post("/getDayPresenti", async (req, res) => {
 
 //making route to delete teacher
 router.post("/deleteTeacher", async (req, res) => {
+  const { email } = req.body;
+
+  const userExist = await User.findOneAndDelete({ email: email });
+  const teacherExist = await teacher.findOneAndDelete({ email: email });
+
+  return res.status(201).json({ message: "Success" });
+});
+
+//making route to make absenti of specific student
+router.post("/removeRollnumber", async (req, res) => {
   const { email } = req.body;
 
   const userExist = await User.findOneAndDelete({ email: email });
